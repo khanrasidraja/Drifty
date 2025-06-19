@@ -1,0 +1,76 @@
+changelog:
+  categories:
+    - title: New Features ✨ in Application
+      labels:
+        - "feature ✨"
+      exclude:
+        labels:
+          - "Website 🌐"
+          - "documentation 📝"
+          - "dependencies 📦️"
+          - "docker 🐋"
+    - title: Bug 🪲 Fixes in Application
+      labels:
+        - "bug 🐛"
+      exclude:
+        labels:
+          - "Website 🌐"
+          - "documentation 📝"
+          - "dependencies 📦️"
+          - "docker 🐋"
+    - title: New Features ✨ in Website
+      labels:
+        - "feature ✨"
+      exclude:
+        labels:
+          - "App 💻"
+          - "documentation 📝"
+          - "dependencies 📦️"
+          - "docker 🐋"
+    - title: Bug 🪲 Fixes in Website
+      labels:
+        - "bug 🐛"
+      exclude:
+        labels:
+          - "App 💻"
+          - "documentation 📝"
+          - "dependencies 📦️"
+          - "docker 🐋"
+    - title: Documentation 📝 Changes
+      labels:
+        - "documentation 📝"
+      exclude:
+        labels:
+          - "App 💻"
+          - "Website 🌐"
+          - "dependencies 📦️"
+          - "docker 🐋"
+    - title: New Features ✨ in Docker 🐋
+      labels:
+        - "docker 🐋"
+        - "feature ✨"
+      exclude:
+        labels:
+          - "App 💻"
+          - "documentation 📝"
+          - "Website 🌐"
+          - "dependencies 📦️"
+    - title: Bug 🪲 Fixes in Docker 🐋
+      labels:
+        - "docker 🐋"
+        - "bug 🐛"
+      exclude:
+        labels:
+          - "App 💻"
+          - "documentation 📝"
+          - "Website 🌐"
+          - "dependencies 📦️"
+    - title: Dependency 📦️ Changes
+      labels:
+        - "dependencies 📦️"
+        - "maven 📦️"
+        - "npm 📦️"
+      exclude:
+        labels:
+          - "App 💻"
+          - "documentation 📝"

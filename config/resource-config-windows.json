@@ -1,0 +1,8 @@
+{
+  "resources": {
+    "includes": [
+      {"pattern": "yt-dlp.exe"},
+      {"pattern": "ffmpeg.exe"}
+    ]
+  }
+}

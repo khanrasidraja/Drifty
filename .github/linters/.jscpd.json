@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "**/.idea/**",
+    "**/.git/**",
+    "**/Website/app/Releases.js",
+    "**/pom.xml",
+    "CLI/src/main/java/backend/ProgressBarThread.java",
+    "CLI/src/main/java/main/Drifty_CLI.java",
+    "GUI/src/main/java/backend/FileDownloader.java"
+  ]
+}

@@ -1,0 +1,34 @@
+name: Other
+description: Want to raise a different issue?
+title: "[OTHER] "
+labels: [Other issue]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A detailed description of the issue with links and screenshots.
+    validations:
+      required: true
+  - type: textarea
+    id: extrainfo
+    attributes:
+      label: Additional information
+      description: Add any other context about the issue here.
+    validations:
+      required: false
+  - type: dropdown
+    id: assignee
+    attributes:
+      label: Do you want to work on this issue?
+      multiple: false
+      options:
+        - "Yes"
+        - "No"
+      default: 0
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        You can also join our [Discord community](https://discord.gg/DeT4jXPfkG) for any help or support.

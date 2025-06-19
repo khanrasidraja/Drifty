@@ -1,0 +1,111 @@
+name: Lint Code Base
+
+on:
+  push:
+  pull_request_target:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Lint Code Base
+    if: github.repository == 'SaptarshiSarkar12/Drifty'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Full git history is necessary to get a proper
+          # list of changed files within `super-linter`
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+          cache: "npm"
+          cache-dependency-path: "./Website/package-lock.json"
+      - name: Restore Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          # Generate a new cache whenever packages or source files change.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/Website/package-lock.json') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/Website/package-lock.json') }}-
+      - name: Run the linter on website code
+        run: |
+          cd Website
+          npm ci
+          npm run lint
+      - name: Lint Code Base
+        id: lint
+        uses: super-linter/super-linter/slim@v7
+        continue-on-error: true
+        env:
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CREATE_LOG_FILE: true
+          VALIDATE_BASH: false
+          VALIDATE_CPP: false
+          VALIDATE_CSS: false
+          VALIDATE_GITHUB_ACTIONS: false
+          VALIDATE_GOOGLE_JAVA_FORMAT: false
+          VALIDATE_JAVASCRIPT_STANDARD: false
+          VALIDATE_JSX: false
+          VALIDATE_JAVASCRIPT_ES: false
+          VALIDATE_JAVASCRIPT_PRETTIER: false
+          VALIDATE_TSX: false
+          VALIDATE_TYPESCRIPT_ES: false
+          VALIDATE_TYPESCRIPT_STANDARD: false
+          VALIDATE_JSON: false
+          VALIDATE_CLANG_FORMAT: false
+          VALIDATE_CSHARP: false
+          VALIDATE_NATURAL_LANGUAGE: false
+          VALIDATE_YAML: false
+          VALIDATE_CHECKOV: false
+          VALIDATE_SHELL_SHFMT: false
+          VALIDATE_GIT_MERGE_CONFLICT_MARKERS: false
+      - name: Set read and write permission in super linter log
+        run: sudo chmod 777 super-linter.log
+      - name: Upload Lint Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: linter-result
+          path: super-linter.log
+      - name: Generate Workflow Summary for successful run
+        if: ${{ steps.lint.outcome == 'success' }}
+        run: |
+          echo "## :ballot_box_with_check: Linting passed!" >> $GITHUB_STEP_SUMMARY
+      - name: Generate Workflow Summary for failed run
+        if: ${{ steps.lint.outcome == 'failure' }}
+        run: |
+          echo "## :x: Linting errors found!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`css" >> $GITHUB_STEP_SUMMARY
+          cat super-linter.log | grep "\[ERROR]" | sed 's/[0-9A-Z:.-]\+ [0-9:]\+ //' | sed 's/\[ERROR]//' | sed 's/   //' | sed 's/Error code: [0-9]. Command output://' | sed 's/ //' | sed 's/ERRORSFOUND//' | sed 's/ in [A-Z:]\+//' | sed 's/[[0-9]\+]//' | sed -r "s/\x1B\[(([0-9]+)(;[0-9]+)*)?[m,K,H,f,J]//g" | sed '1,2d' | sed 's/Errorsfound//' | sed 's/\/github\/workspace\///' | awk '!x[$1]++ && ! /^[[:blank:]]*$/' | sed 's/Founderrors when linting [A-Za-z.]\+. Exit code: [0-9].//' | sed 's/Super-linterdetected linting errors//' | tr -s '\n' '\n' >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      - name: Comment on PR for failed run
+        if: ${{ steps.lint.outcome == 'failure' && github.event_name == 'pull_request_target' }}
+        shell: bash
+        run: |
+          COMMENT_INITIAL=$(echo -e "## :x: Linting errors found!\n")
+          COMMENT_MIDDLE=$(cat super-linter.log | grep "\[ERROR]" | sed 's/[0-9A-Z:.-]\+ [0-9:]\+ //' | sed 's/\[ERROR]//' | sed 's/   //' | sed 's/Error code: [0-9]. Command output://' | sed 's/ //' | sed 's/ERRORSFOUND//' | sed 's/ in [A-Z:]\+//' | sed 's/[[0-9]\+]//' | sed -r "s/\x1B\[(([0-9]+)(;[0-9]+)*)?[m,K,H,f,J]//g" | sed '1,2d' | sed 's/Errorsfound//' | sed 's/\/github\/workspace\///' | awk '!x[$1]++ && ! /^[[:blank:]]*$/' | sed 's/Founderrors when linting [A-Za-z.]\+. Exit code: [0-9].//' | sed 's/Super-linterdetected linting errors//' | tr -s '\n' '\n')
+          COMMENT_END=$(echo -e "\n\n#### Generated from [this workflow run (ID: ${{ github.run_id }})](https://github.com/SaptarshiSarkar12/Drifty/actions/runs/${{ github.run_id }})")
+          COMMENT_BODY=$(echo -e "$COMMENT_INITIAL \n @${{ github.event.pull_request.user.login }} Please fix the following errors:\n\n\`\`\`css\n$COMMENT_MIDDLE\n\`\`\`$COMMENT_END")
+          COMMENT=$(echo "$COMMENT_BODY")
+          gh pr comment ${{ github.event.pull_request.number }} --body "$COMMENT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fail Workflow for failure in linting
+        if: ${{ steps.lint.outcome == 'failure' }}
+        uses: actions/github-script@v7.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            core.setFailed("Linting errors found! Please check workflow summary for details.")
