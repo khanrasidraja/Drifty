@@ -10,7 +10,7 @@ public class DownloadManager {
     private final ExecutorService executor;
 
     public DownloadManager(int maxParallelDownloads) {
-        
+
         this.executor = Executors.newFixedThreadPool(maxParallelDownloads);
     }
 
